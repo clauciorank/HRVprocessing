@@ -1,0 +1,40 @@
+---
+title: "HRV"
+author: "Claucio"
+date: "9/1/2020"
+output: html_document
+
+
+---
+
+# Library 
+```{r}
+library(tidyverse)
+library(dplyr)
+library(RHRV)
+```
+
+# Reading RR for RHRV
+```{r}
+setwd('~/Documents/Fisiologia UFPR/HRV revisados 9-11/Echo/RR/')#directory with the rr interval files
+RRlist <- list.files(pattern = 'csv')
+```
+
+# RHRV Time analysis and export
+
+```{r message=FALSE, warning=FALSE}
+for(i in (1:length(RRlist))) {
+  setwd('~/Documents/Fisiologia UFPR/HRV revisados 9-11/Echo/RR/')#directory with the rr interval files
+  hrv.data <- NULL
+  hrv.data <- CreateHRVData(Verbose = F)
+  hrv.data <- LoadBeatRR(hrv.data, RRlist[[i]])
+  hrv.data <- BuildNIHR(hrv.data)
+  hrv.data$Beat <- hrv.data$Beat[-1,]
+  hrv.data<- CreateTimeAnalysis(hrv.data, size = 40)
+  TimeAnaysis <- data.frame(hrv.data$TimeAnalysis[[1]])
+  HeartRate <- 60/(mean(hrv.data$Beat$RR)/1000)
+  save <- data.frame(HeartRate, TimeAnaysis)
+  setwd('~/Documents/Fisiologia UFPR/HRV revisados 9-11/Echo/HRV/')#directory to save the HRV file
+  write.csv(save, RRlist[[i]])
+}
+```

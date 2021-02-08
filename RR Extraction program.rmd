@@ -1,0 +1,183 @@
+---
+title: "RR Extraction"
+author: "Claucio"
+date: "8/27/2020"
+output: html_document
+---
+
+```{r}
+library(dplyr)
+library(pracma)
+library(ggplot2)
+library(RHRV)
+library(tidyverse)
+```
+
+# Exporting .csv list with all the animal data
+```{r}
+setwd('~/Documents/Fisiologia UFPR/HRV revisados 9-11/Echo/Amostra/ECG/')#directory with the ecg data
+dados <- list.files(pattern = 'csv')
+write(dados, 'amostra Echo') #change string to another file name
+```
+
+# reading doc with all the animal data
+```{r}
+setwd('~/Documents/Fisiologia UFPR/HRV revisados 9-11/Echo/Amostra/ECG/')#directory with the ecg data
+x <- read.csv('amostra Echo', header = F)
+```
+
+# lendo todos
+
+```{r}
+listadados <- list()
+for (i in (1:length(x$V1))) {
+  listadados[[i]]<- read.csv(x$V1[[i]])
+}
+```
+
+# selecting some to analyze
+
+```{r}
+setwd('~/Documents/Fisiologia UFPR/HRV revisados 9-11/Echo/Amostra/ECG/')#directory with the ecg data
+t <- c(1:52)  ###edit this value
+
+listadados <- list()
+for (i in (t)) {
+  listadados[[i]]<- read.csv(dados[[i]])
+}
+```
+
+# Creating voltage * -1
+
+```{r}
+for (i in (t)) {
+  listadados[[i]]$voltage.mv_1 <- listadados[[i]]$voltage.mv *-1
+}
+
+```
+
+# Excluding Null data
+
+```{r}
+e <- if(min(t) == 1) 0 else c(1:(min(t)-1))
+
+
+listadados[e] <- NA
+dados[e] <- NA
+
+
+listadados <- listadados[!is.na(listadados)]
+dados <- dados[!is.na(dados)]
+```
+
+#Plotverification
+
+```{r}
+plotlistverification <- list()
+for (i in (1:length(listadados))) {
+  plotlistverification[[i]] <- 
+    ggplot(listadados[[i]], aes(y = voltage.mv_1, x=X))+
+    geom_line()+
+    geom_hline(yintercept = .6)+
+    labs(title = i)}
+plotlistverification[1:length(listadados)]
+```
+
+
+# Excluding some
+
+```{r}
+e <- c(33,68)#exclude the problematic ecgs putting the numbers between parenthesis
+
+
+listadados[e] <- NA
+dados[e] <- NA
+
+
+listadados <- listadados[!is.na(listadados)]
+dados <- dados[!is.na(dados)]
+```
+
+
+# R peak list
+```{r}
+peaklist <- list()
+for (i in (1:length(listadados))) {
+  peaklist[[i]] <- data.frame(findpeaks(listadados[[i]]$voltage.mv_1, minpeakheight = .6, minpeakdistance = 30, nups = 0))
+} #minpeakheight will change the r-wave threshold
+```
+
+# Ploting for rr identification inspection
+
+```{r}
+
+plotlista <- list()
+for (i in (1:length(listadados))) {
+  plotlista[[i]] <- 
+    ggplot(listadados[[i]], aes(y = voltage.mv_1, x=X))+
+    geom_line()+
+    geom_point(data = peaklist[[i]], aes(x=X2, y =X1), color = 'red')+
+    labs(title = i)
+  }
+
+plotlista[1:length(plotlista)]
+```
+
+
+# Correcting
+
+```{r}
+a <- 44 #problematic rr ecg
+peaklist[[a]] <- data.frame(findpeaks(listadados[[a]]$voltage.mv_1, minpeakheight = .5, minpeakdistance = 30, nups = 0)) #change minpeakheight to adjust the rr identification
+
+
+ggplot(listadados[[a]], aes(y = voltage.mv_1, x=X))+
+  geom_line()+
+  geom_point(data = peaklist[[a]], aes(x=X2, y =X1), color = 'red')+
+  labs(title = a)
+```
+
+# Excluding some
+
+```{r}
+e <- c(79)
+
+
+listadados[e] <- NA
+dados[e] <- NA
+
+
+listadados <- listadados[!is.na(listadados)]
+dados <- dados[!is.na(dados)]
+```
+
+
+# Exporting RR
+
+```{r}
+setwd('~/Documents/Fisiologia UFPR/HRV revisados 9-11/Echo/RR/') #directory to save rr interval file
+peakposilist <- list()
+rrfilteredlist <- list()
+rrfilteredlistorder <- list()
+for (i in (1:length(listadados))) {
+  
+
+peakposilist[[i]] <- peaklist[[i]]$X2 
+
+
+rrfilteredlist[[i]] <- listadados[[i]] %>% slice(peakposilist[[i]]) 
+
+
+rrfilteredlistorder[[i]] <- rrfilteredlist[[i]][order(rrfilteredlist[[i]]$time.sec),]
+}
+
+
+RRIntervallist <- list()
+for (i in (1:length(rrfilteredlistorder))) {
+  
+RRIntervallist[[i]] <- diff(rrfilteredlistorder[[i]]$time.sec)
+
+write(RRIntervallist[[i]], dados[[i]], sep = ',', ncolumns = 1)
+}
+```
+
