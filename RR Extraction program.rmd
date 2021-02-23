@@ -15,14 +15,15 @@ library(tidyverse)
 
 # Exporting .csv list with all the animal data
 ```{r}
-setwd('~/Documents/Fisiologia UFPR/HRV revisados 9-11/Echo/Amostra/ECG/')#directory with the ecg data
+ecgdir <- '~/Documents/Fisiologia UFPR/HRV revisados 9-11/Echo/Amostra/ECG/'
+setwd(ecgdir)#directory with the ecg data
 dados <- list.files(pattern = 'csv')
 write(dados, 'amostra Echo') #change string to another file name
 ```
 
 # reading doc with all the animal data
 ```{r}
-setwd('~/Documents/Fisiologia UFPR/HRV revisados 9-11/Echo/Amostra/ECG/')#directory with the ecg data
+setwd(ecgdir)#directory with the ecg data
 x <- read.csv('amostra Echo', header = F)
 ```
 
@@ -38,7 +39,7 @@ for (i in (1:length(x$V1))) {
 # selecting some to analyze
 
 ```{r}
-setwd('~/Documents/Fisiologia UFPR/HRV revisados 9-11/Echo/Amostra/ECG/')#directory with the ecg data
+setwd(ecgdir)#directory with the ecg data
 t <- c(1:52)  ###edit this value
 
 listadados <- list()

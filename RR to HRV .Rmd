@@ -16,7 +16,9 @@ library(RHRV)
 
 # Reading RR for RHRV
 ```{r}
-setwd('~/Documents/Fisiologia UFPR/HRV revisados 9-11/Echo/RR/')#directory with the rr interval files
+rrdir <- '~/Documents/Fisiologia UFPR/HRV revisados 9-11/Echo/RR/'
+setwd(rrdir)#directory with the rr interval files
+hrvdir <- '~/Documents/Fisiologia UFPR/HRV revisados 9-11/Echo/HRV/' #directory to save the HRV file
 RRlist <- list.files(pattern = 'csv')
 ```
 
@@ -24,7 +26,7 @@ RRlist <- list.files(pattern = 'csv')
 
 ```{r message=FALSE, warning=FALSE}
 for(i in (1:length(RRlist))) {
-  setwd('~/Documents/Fisiologia UFPR/HRV revisados 9-11/Echo/RR/')#directory with the rr interval files
+  setwd(rrdir)#directory with the rr interval files
   hrv.data <- NULL
   hrv.data <- CreateHRVData(Verbose = F)
   hrv.data <- LoadBeatRR(hrv.data, RRlist[[i]])
@@ -34,7 +36,7 @@ for(i in (1:length(RRlist))) {
   TimeAnaysis <- data.frame(hrv.data$TimeAnalysis[[1]])
   HeartRate <- 60/(mean(hrv.data$Beat$RR)/1000)
   save <- data.frame(HeartRate, TimeAnaysis)
-  setwd('~/Documents/Fisiologia UFPR/HRV revisados 9-11/Echo/HRV/')#directory to save the HRV file
+  setwd(hrvdir)
   write.csv(save, RRlist[[i]])
 }
 ```
