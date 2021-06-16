@@ -15,7 +15,7 @@ library(tidyverse)
 
 # Exporting .csv list with all the animal data
 ```{r}
-ecgdir <- '~/Documents/Fisiologia UFPR/HRV revisados 9-11/Echo/Amostra/ECG/'
+ecgdir <- '~/Desktop/'
 setwd(ecgdir)#directory with the ecg data
 dados <- list.files(pattern = 'csv')
 write(dados, 'amostra Echo') #change string to another file name
@@ -178,7 +178,7 @@ for (i in (1:length(rrfilteredlistorder))) {
   
 RRIntervallist[[i]] <- diff(rrfilteredlistorder[[i]]$time.sec)
 
-write(RRIntervallist[[i]], dados[[i]], sep = ',', ncolumns = 1)
+write(RRIntervallist[[i]][RRIntervallist[[i]]>0], dados[[i]], sep = ',', ncolumns = 1)
 }
 ```
 
